@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import {
   Bot,
@@ -48,21 +49,10 @@ const items = [
   },
 ];
 
-const projects = [
-  {
-    name: "Project 1",
-  },
-  {
-    name: "Project 2",
-  },
-  {
-    name: "Project 3",
-  },
-];
-
 export function AppSidebar() {
   const pathname = usePathname();
-  const {open} = useSidebar();
+  const { open } = useSidebar();
+  const { projects, projectId, setProjectId } = useProject();
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
@@ -73,7 +63,9 @@ export function AppSidebar() {
             width={40}
             height={40}
           ></Image>
-          {open && <h1 className="text-primary/80 text-xl font-bold">Repo Recap</h1>}
+          {open && (
+            <h1 className="text-primary/80 text-xl font-bold">Repo Recap</h1>
+          )}
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -106,17 +98,17 @@ export function AppSidebar() {
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projects.map((singleProject) => {
+              {projects?.map((singleProject) => {
                 return (
                   <SidebarMenuItem key={singleProject.name}>
                     <SidebarMenuButton asChild>
-                      <div>
+                      <div onClick={() => setProjectId(singleProject.id)}>
                         <div
                           className={cn(
                             "text-primary flex size-6 items-center justify-center rounded-sm border bg-white text-sm",
                             {
-                              // "bg-primary text-white " : singleProject.id ==singleProject.id
-                              "bg-primary text-white": true,
+                              "bg-primary text-white":
+                                singleProject.id == projectId,
                             },
                           )}
                         >
@@ -129,14 +121,16 @@ export function AppSidebar() {
                 );
               })}
               <div className="h-2" />
-              {open && <SidebarMenuItem>
-                <Link href="/create">
-                  <Button variant={"outline"} className="w-fit" size={"sm"}>
-                    <Plus></Plus>
-                    Create Project
-                  </Button>
-                </Link>
-              </SidebarMenuItem>}
+              {open && (
+                <SidebarMenuItem>
+                  <Link href="/create">
+                    <Button variant={"outline"} className="w-fit" size={"sm"}>
+                      <Plus></Plus>
+                      Create Project
+                    </Button>
+                  </Link>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
