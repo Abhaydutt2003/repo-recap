@@ -73,9 +73,9 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((singleItem) => {
+              {items.map((singleItem, index) => {
                 return (
-                  <SidebarMenuItem key={singleItem.title}>
+                  <SidebarMenuItem key={index}>
                     <SidebarMenuButton asChild>
                       <Link
                         href={singleItem.url}
