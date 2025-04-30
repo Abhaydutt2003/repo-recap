@@ -17,8 +17,8 @@ export const getCommitHashes = async (
   githubUrl: string,
 ): Promise<Response[]> => {
   // Clean up the URL and extract owner/repo
-  const cleanUrl = githubUrl.replace(/\.git$/, '').replace(/\/$/, '');
-  const urlParts = cleanUrl.split('/');
+  const cleanUrl = githubUrl.replace(/\.git$/, "").replace(/\/$/, "");
+  const urlParts = cleanUrl.split("/");
   const owner = urlParts[urlParts.length - 2];
   const repo = urlParts[urlParts.length - 1];
 
@@ -73,6 +73,7 @@ export const pollCommits = async (projectId: string) => {
       return summariseCommit(project.githubUrl, commit.commitHash);
     }),
   );
+  console.log(summaryResponses);
   const summaries = summaryResponses.map((response) => {
     if (response.status === "fulfilled") {
       return response.value;
@@ -86,7 +87,7 @@ export const pollCommits = async (projectId: string) => {
         commitHash: unprocessedCommits[index]!.commitHash,
         commitMessage: unprocessedCommits[index]!.commitMessage,
         commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
-        commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorName,
+        commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
         commitDate: unprocessedCommits[index]!.commitDate,
         summary: singleSummary,
       };
@@ -129,8 +130,3 @@ async function filterUnprocessedCommits(
   );
   return unprocessedCommits;
 }
-
-// // Example usage - remove .git from the URL
-// getCommitHashes("https://github.com/Abhaydutt2003/E2E_NodeJs")
-//   .then(commits => console.log(commits))
-//   .catch(error => console.error(error));
