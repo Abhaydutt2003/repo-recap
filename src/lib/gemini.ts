@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Document } from "@langchain/core/documents";
 
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -7,6 +8,7 @@ const model = genAi.getGenerativeModel({
 });
 
 export const summariseCommit = async (diff: string) => {
+  console.log("This is the commit ai call",diff);
   const prompt = `
 You are an AI assistant specialized in summarizing Git commit diffs. Your goal is to generate a concise commit summary, ideally 1-2 lines long, that accurately reflects the changes. Follow standard commit message conventions where appropriate (e.g., "Feat:", "Fix:", "Refactor:", "Docs:", "Style:", "Chore:", "Perf:").
 
@@ -77,6 +79,44 @@ You are an AI assistant specialized in summarizing Git commit diffs. Your goal i
 
 * **Output Summary:**
 `;
-  const response = await model.generateContent([prompt]);
-  return response.response.text();
+  // try {
+  //   const response = await model.generateContent([prompt]);
+  //   console.log("This is the response of sumamrising commit",response.response.text());
+  //   return response.response.text();
+  // } catch (error) {
+  //   console.log("Error summarising commit ", error);
+  //   return "";
+  // }
+      const response = await model.generateContent([prompt]);
+    console.log("This is the response of sumamrising commit",response.response.text());
+    return response.response.text();
 };
+
+export async function summariseCode(doc: Document) {
+  // console.log("Generating summary for ", doc.metadata.source);
+  const code = doc.pageContent.slice(0, 1000);
+  const prompt = `You are a senior software engineer explaining a code snippet to a junior software engineer. The code is from the file: ${doc.metadata.source}.
+
+Here is the code:
+\`\`\`typescript
+${code}
+\`\`\`
+
+Please explain what this code does, keeping your explanation concise and to a maximum of 100 words.`;
+  try {
+    const response = await model.generateContent([prompt]);
+    return response.response.text();
+  } catch (error) {
+    // console.log("Error summarising code ", error);
+    return "" ;
+  }
+}
+
+export async function generateEmbedding(summary: string) {
+  const model = genAi.getGenerativeModel({
+    model: "text-embedding-004",
+  });
+  const result = await model.embedContent(summary);
+  const embedding = result.embedding;
+  return embedding.values;
+}

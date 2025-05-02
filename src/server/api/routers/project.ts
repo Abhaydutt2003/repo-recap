@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { pollCommits } from "@/lib/github";
+import { indexGithubRepo } from "@/lib/github-loader";
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -12,19 +13,25 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const project = await ctx.db.project.create({
-        data: {
-          githubUrl: input.githubUrl,
-          name: input.name,
-          userToProjects: {
-            create: {
-              userId: ctx.user.userId!,
+      try {
+        const project = await ctx.db.project.create({
+          data: {
+            githubUrl: input.githubUrl,
+            name: input.name,
+            userToProjects: {
+              create: {
+                userId: ctx.user.userId!,
+              },
             },
           },
-        },
-      });
-      await pollCommits(project.id);
-      return project;
+        });
+        await pollCommits(project.id);
+        return project;
+      } catch (error) {
+        console.log("Error while creating project ", error);
+      }
+
+      // await indexGithubRepo(project.id,input.githubUrl,input.githubToken);
     }),
   getProjects: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.project.findMany({

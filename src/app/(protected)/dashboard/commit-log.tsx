@@ -13,7 +13,6 @@ const CommitLog = () => {
     <>
       <ul className="space-y-6">
         {commits?.map((singleCommit, index) => {
-            console.log(singleCommit.commitAuthorAvatar)
           return (
             <li key={singleCommit.id} className="relative flex gap-x-4">
               <div
