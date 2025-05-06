@@ -8,7 +8,6 @@ const model = genAi.getGenerativeModel({
 });
 
 export const summariseCommit = async (diff: string) => {
-  console.log("This is the commit ai call",diff);
   const prompt = `
 You are an AI assistant specialized in summarizing Git commit diffs. Your goal is to generate a concise commit summary, ideally 1-2 lines long, that accurately reflects the changes. Follow standard commit message conventions where appropriate (e.g., "Feat:", "Fix:", "Refactor:", "Docs:", "Style:", "Chore:", "Perf:").
 
@@ -79,17 +78,26 @@ You are an AI assistant specialized in summarizing Git commit diffs. Your goal i
 
 * **Output Summary:**
 `;
-  // try {
-  //   const response = await model.generateContent([prompt]);
-  //   console.log("This is the response of sumamrising commit",response.response.text());
-  //   return response.response.text();
-  // } catch (error) {
-  //   console.log("Error summarising commit ", error);
-  //   return "";
-  // }
-      const response = await model.generateContent([prompt]);
-    console.log("This is the response of sumamrising commit",response.response.text());
-    return response.response.text();
+
+    const MAX_RETRIES = 3;
+    let retries = 0;
+    let summary = "";
+    while(retries<MAX_RETRIES){
+      try{
+        const response = await model.generateContent([prompt]);
+        summary = response.response.text();
+      }catch(error){
+        retries++;
+        console.error(`AI summary failed (attempt ${retries}/${MAX_RETRIES}):`, error);
+        if(retries>= MAX_RETRIES){
+          summary = "Failed to generate summary after multiple attempts"; 
+        }
+        // Exponential backoff
+        const delay = 1000 * Math.pow(2, retries);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    return summary;
 };
 
 export async function summariseCode(doc: Document) {
